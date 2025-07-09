@@ -1,0 +1,39 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "debugpy",
+            "request": "launch",
+            "name": "Launch spawn_basic.py with Arguments",
+            "program": "${workspaceFolder}/scripts/spawn_basic.py",
+            "args": [
+                "--frames", "${input:frames}",
+                "--out", "${input:outdir}",
+                "--host", "${input:host}",
+                "--port", "${input:port}"
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "frames",
+            "type": "promptString",
+            "description": "Number of frames to capture (e.g. 600)"
+        },
+        {
+            "id": "outdir",
+            "type": "promptString",
+            "description": "Output directory (e.g. datasets/demo1)"
+        },
+        {
+            "id": "host",
+            "type": "promptString",
+            "description": "CARLA server host (e.g. 127.0.0.1)"
+        },
+        {
+            "id": "port",
+            "type": "promptString",
+            "description": "CARLA server port (e.g. 2000)"
+        }
+    ]
+}

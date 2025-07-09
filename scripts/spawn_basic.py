@@ -30,6 +30,7 @@ import time
 import numpy as np
 import cv2
 import carla
+import os
 
 
 def save_lidar(out_dir: pathlib.Path):
@@ -59,11 +60,17 @@ def main() -> None:
      parser.add_argument("--host", default="127.0.0.1")
      parser.add_argument("--port", type=int, default=2000)
      parser.add_argument("--frames", type=int, default=600)
-     parser.add_argument("--out", type=pathlib.Path, required=True)
+     parser.add_argument("--out", type=pathlib.Path, default=pathlib.Path("datasets/demo"))
      args = parser.parse_args()
 
-     out_lidar = args.out / "velodyne"
-     out_rgb = args.out / "images"
+     assert args.out is not None, "Output directory must be specified with --out"
+     outDir = pathlib.Path(args.out)
+     if not outDir.is_absolute():
+          # If relative, make it absolute based on current working directory
+          outDir = pathlib.Path(os.getcwd(), args.out)
+     print(f"Using host={args.host}, port={args.port}, frames={args.frames}, out={outDir}")
+     out_lidar = outDir / "velodyne"
+     out_rgb = outDir / "images"
      out_lidar.mkdir(parents=True, exist_ok=True)
      out_rgb.mkdir(parents=True, exist_ok=True)
 
@@ -74,7 +81,11 @@ def main() -> None:
      blueprint_lib = world.get_blueprint_library()
 
      # Spawn ego vehicle
-     ego_bp = blueprint_lib.filter("vehicle.tesla.model3")[0]
+     vehicle_id = "vehicle.lincoln.mkz"
+     ego_candidates = blueprint_lib.filter(vehicle_id)
+     if not ego_candidates:
+         raise RuntimeError("No blueprint found for specified vehicle. Check your CARLA assets.")
+     ego_bp = ego_candidates[0]
      spawn_pt = world.get_map().get_spawn_points()[0]
      ego = world.try_spawn_actor(ego_bp, spawn_pt)
      if ego is None:
@@ -104,6 +115,7 @@ def main() -> None:
      ego.set_autopilot(True)
 
      print(f"Capturing {args.frames} frames ... (Ctrl-C to abort)")
+    
      start_frame = world.get_snapshot().frame
      target_frame = start_frame + args.frames
 
